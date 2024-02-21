@@ -8,16 +8,13 @@ import pl.akademiaspecjalistowit.podstawytestowaniajava.ex2.money.Currency;
 import pl.akademiaspecjalistowit.podstawytestowaniajava.ex2.money.Money;
 import pl.akademiaspecjalistowit.podstawytestowaniajava.ex2.money.MoneyException;
 
-import java.util.List;
-
 class BankServiceTest {
 
     private BankService bankServiceSuT;
 
-
     @BeforeEach
     void setUp() {
-        bankServiceSuT = new BankServicePln();
+        bankServiceSuT = new BankServicePln(Currency.PLN);
     }
 
     @Test
@@ -38,22 +35,15 @@ class BankServiceTest {
         //given
         bankServiceSuT.depositMoney(new Money(Currency.PLN, 100.0));
         Money money = new Money(Currency.PLN, 10.0);
-        Double resultOperation = getSummaMoney(bankServiceSuT.checkBalance()) - money.amount;
+        Double resultOperation = BankServicePln.getSummaMoney(bankServiceSuT.checkBalance()) - money.amount;
 
         //when
         bankServiceSuT.withdrawMoney(money);
 
         //then
-        assertThat(getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(resultOperation);
+        assertThat(BankServicePln.getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(resultOperation);
     }
 
-    private Double getSummaMoney(List<Money> listMoney) {
-        Double sum = 0.0;
-        for (Money nextItem : listMoney) {
-            sum += nextItem.amount;
-        }
-        return sum;
-    }
 
     @Test
     public void should_not_allow_to_withdraw_money_on_debit() {
@@ -61,13 +51,13 @@ class BankServiceTest {
         //given
         bankServiceSuT.depositMoney(new Money(Currency.PLN, 100.0));
         Money money = new Money(Currency.PLN, 110.0);
-        Double resultOperation = getSummaMoney(bankServiceSuT.checkBalance()) - money.amount;
-        //when
-        Money moneyEnd = bankServiceSuT.withdrawMoney(money);
-        //then
+        Double resultOperation = BankServicePln.getSummaMoney(bankServiceSuT.checkBalance()) - money.amount;
+
         try {
-            //nie wiem co moge tutaj napisac
+            //when
+            Money moneyEnd = bankServiceSuT.withdrawMoney(money);
         } catch (MoneyException thrown) {
+            //then
             assertThat(thrown.getMessage()).isNotEqualTo("");
         }
     }
@@ -75,24 +65,29 @@ class BankServiceTest {
     @Test
     public void balance_should_not_change_when_withdraw_failed() {
         //given
-        Double currentBalance = getSummaMoney(bankServiceSuT.checkBalance());
+        Double currentBalance = BankServicePln.getSummaMoney(bankServiceSuT.checkBalance());
         Money money = new Money(Currency.PLN, currentBalance * 10 / 100);
+
         //when
         bankServiceSuT.withdrawMoney(money);
+
         //then
-        assertThat(bankServiceSuT.checkBalance()).isEqualTo(currentBalance);
+        assertThat(BankServicePln.getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(currentBalance);
     }
 
     @Test
     public void should_not_allow_to_deposit_over_5000_at_once() {
         //given
         Money money = new Money(Currency.PLN, 5001.0);
-        Double currentBalance = getSummaMoney(bankServiceSuT.checkBalance());
-        //when
-        bankServiceSuT.depositMoney(money);
+        Double currentBalance = BankServicePln.getSummaMoney(bankServiceSuT.checkBalance());
 
-        //then
-        assertThat(getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(currentBalance);
+        try {
+            //when
+            bankServiceSuT.depositMoney(money);
+        } catch (MoneyException thrown) {
+            //then
+            assertThat(BankServicePln.getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(currentBalance);
+        }
     }
 
     @Test
@@ -101,12 +96,11 @@ class BankServiceTest {
         bankServiceSuT.depositMoney(new Money(Currency.PLN, 100.0));
         Money money = new Money(Currency.EUR, 10.0);
 
-        //when
-        bankServiceSuT.withdrawMoney(money);
-        //then
         try {
-            //nie wiem co moge tutaj napisac
+            //when
+            bankServiceSuT.withdrawMoney(money);
         } catch (MoneyException thrown) {
+            //then
             assertThat(thrown.getMessage()).isNotEqualTo("");
         }
     }
@@ -115,11 +109,13 @@ class BankServiceTest {
     public void should_not_allow_to_deposit_money_with_different_account_currency() {
         //given
         Money money = new Money(Currency.EUR, 14.5);
-        Double currentBalance = getSummaMoney(bankServiceSuT.checkBalance());
-        //when
-        bankServiceSuT.depositMoney(money);
-
-        //then
-        assertThat(getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(currentBalance);
+        Double currentBalance = BankServicePln.getSummaMoney(bankServiceSuT.checkBalance());
+        try {
+            //when
+            bankServiceSuT.depositMoney(money);
+        } catch (MoneyException thrown) {
+            //then
+            assertThat(BankServicePln.getSummaMoney(bankServiceSuT.checkBalance())).isEqualTo(currentBalance);
+        }
     }
 }

@@ -12,4 +12,9 @@ public class Money {
         this.currency = currency;
         this.amount = amount;
     }
+
+    @Override
+    public String toString() {
+        return "[" + amount + ", " + currency + "]";
+    }
 }
