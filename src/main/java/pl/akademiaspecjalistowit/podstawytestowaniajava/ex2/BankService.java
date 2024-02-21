@@ -10,4 +10,5 @@ public interface BankService {
     void depositMoney(Money amount);
 
     List<Money> checkBalance();
+
 }
